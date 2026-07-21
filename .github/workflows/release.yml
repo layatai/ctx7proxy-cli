@@ -1,50 +1,56 @@
-name: Release
+name: Publish CLI
 
 on:
   push:
-    branches:
-      - master
+    tags:
+      - "v*"
+  workflow_dispatch:
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  release:
-    name: Release
+  publish:
+    name: Test, build, and publish ctx7proxy-cli
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
+      id-token: write
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v7
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: "20"
+      - name: Checkout repository
+        uses: actions/checkout@v6
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: 11.14.0
 
-      - name: Configure npm authentication
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build all packages
-        run: pnpm build
+      - name: Verify CLI
+        run: |
+          pnpm --filter ctx7proxy-cli lint:check
+          pnpm --filter ctx7proxy-cli format:check
+          pnpm --filter ctx7proxy-cli typecheck
+          pnpm --filter ctx7proxy-cli test
+          pnpm --filter ctx7proxy-cli build
 
-      - name: Create Release PR or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: pnpm release
-          commit: "chore(release): version packages"
-          title: "chore(release): version packages"
+      - name: Verify tag matches package version
+        if: github.ref_type == 'tag'
+        working-directory: packages/cli
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node -e "const v=require('./package.json').version;if(process.env.RELEASE_TAG !== 'v'+v)throw new Error('Tag must be v'+v)"
+
+      - name: Publish package
+        working-directory: packages/cli
+        run: npm publish --access public --provenance

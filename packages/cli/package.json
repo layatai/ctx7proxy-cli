@@ -1,7 +1,7 @@
 {
-  "name": "ctx7",
-  "version": "0.5.5",
-  "description": "Context7 CLI - Fetch documentation context and configure Context7",
+  "name": "ctx7proxy-cli",
+  "version": "0.1.0",
+  "description": "Context7 CLI fork with custom ctx7proxy support",
   "type": "module",
   "bin": {
     "ctx7": "./dist/index.js"
@@ -52,17 +52,17 @@
     "documentation",
     "mcp"
   ],
-  "author": "Upstash",
+  "author": "layatai",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/upstash/context7.git",
+    "url": "git+https://github.com/layatai/ctx7proxy-cli.git",
     "directory": "packages/cli"
   },
   "bugs": {
-    "url": "https://github.com/upstash/context7/issues"
+    "url": "https://github.com/layatai/ctx7proxy-cli/issues"
   },
-  "homepage": "https://context7.com",
+  "homepage": "https://github.com/layatai/ctx7proxy-cli#readme",
   "engines": {
     "node": ">=18"
   }

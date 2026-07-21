@@ -101,8 +101,10 @@ describe("detectInstallMethod", () => {
 
 describe("getUpgradePlan", () => {
   test("returns explicit runner commands for ephemeral installs", () => {
-    expect(getUpgradePlan("npx").displayCommand).toBe("npx ctx7@latest <command>");
-    expect(getUpgradePlan("pnpm-dlx").displayCommand).toBe("pnpm dlx ctx7@latest <command>");
+    expect(getUpgradePlan("npx").displayCommand).toBe("npx ctx7proxy-cli@latest <command>");
+    expect(getUpgradePlan("pnpm-dlx").displayCommand).toBe(
+      "pnpm dlx ctx7proxy-cli@latest <command>"
+    );
   });
 
   test("does not auto-run upgrade plans for unknown installs", () => {

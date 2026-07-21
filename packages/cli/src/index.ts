@@ -7,7 +7,7 @@ import { registerSetupCommand } from "./commands/setup.js";
 import { registerRemoveCommand } from "./commands/remove.js";
 import { registerDocsCommands } from "./commands/docs.js";
 import { maybeShowUpgradeNotice, registerUpgradeCommand } from "./commands/upgrade.js";
-import { setBaseUrl } from "./utils/api.js";
+import { setBaseUrl, setProxyUrl } from "./utils/api.js";
 import { VERSION } from "./constants.js";
 
 const brand = {
@@ -21,12 +21,19 @@ program
   .name("ctx7")
   .description("Context7 CLI - Fetch documentation context and configure Context7")
   .version(VERSION, "-v, --version")
-  .option("--base-url <url>")
+  .option(
+    "--proxy-url <url>",
+    "Route library and docs requests through a ctx7proxy URL",
+    process.env.CONTEXT7_PROXY_URL
+  )
+  .option("--base-url <url>", "Override the Context7 API and authentication base URL")
   .hook("preAction", (thisCommand) => {
     const opts = thisCommand.opts();
     if (opts.baseUrl) {
       setBaseUrl(opts.baseUrl);
       setAuthBaseUrl(opts.baseUrl);
+    } else if (opts.proxyUrl) {
+      setProxyUrl(opts.proxyUrl);
     }
   })
   .hook("preAction", async (_thisCommand, actionCommand) => {
@@ -53,6 +60,9 @@ Examples:
   ${brand.dim("# Query library documentation")}
   ${brand.primary('npx ctx7 library react "how to use hooks"')}
   ${brand.primary('npx ctx7 docs /facebook/react "useEffect examples"')}
+
+  ${brand.dim("# Route documentation requests through ctx7proxy")}
+  ${brand.primary("CONTEXT7_PROXY_URL=http://127.0.0.1:3000/mcp npx ctx7 library react")}
 `
   );
 

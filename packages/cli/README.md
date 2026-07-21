@@ -2,6 +2,19 @@
 
 CLI for [Context7](https://context7.com) - query up-to-date library documentation and configure Context7 for AI coding agents.
 
+## Custom proxy
+
+Route `library` and `docs` requests through a local ctx7proxy instance by setting its base URL or MCP endpoint:
+
+```bash
+export CONTEXT7_PROXY_URL=http://127.0.0.1:3000/mcp
+ctx7 library react "how to use hooks"
+ctx7 docs /facebook/react "useEffect examples"
+```
+
+For a proxy configured with a client access token, set `CONTEXT7_PROXY_TOKEN`.
+You can override the URL for one invocation with `--proxy-url`; login remains on Context7 because ctx7proxy does not provide OAuth endpoints.
+
 ## Installation
 
 ```bash

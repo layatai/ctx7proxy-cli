@@ -14,14 +14,37 @@ import type {
 import { downloadSkillFromGitHub, getSkillFromGitHub } from "./github.js";
 import { VERSION } from "../constants.js";
 
-let baseUrl = "https://context7.com";
+const DEFAULT_BASE_URL = "https://context7.com";
+
+let baseUrl = DEFAULT_BASE_URL;
+let usesCustomProxy = false;
 
 export function getBaseUrl(): string {
   return baseUrl;
 }
 
 export function setBaseUrl(url: string): void {
-  baseUrl = url;
+  baseUrl = url.replace(/\/$/, "");
+  usesCustomProxy = false;
+}
+
+export function setProxyUrl(url: string): void {
+  const parsed = new URL(url);
+  if (!(["http:", "https:"] as string[]).includes(parsed.protocol)) {
+    throw new Error("Proxy URL must use http:// or https://");
+  }
+  if (parsed.username || parsed.password || parsed.search || parsed.hash) {
+    throw new Error("Proxy URL must not include credentials, query parameters, or fragments");
+  }
+
+  const pathname = parsed.pathname.replace(/\/+$/, "");
+  if (pathname && pathname !== "/mcp") {
+    throw new Error('Proxy URL path must be empty or "/mcp"');
+  }
+
+  parsed.pathname = "";
+  baseUrl = parsed.toString().replace(/\/$/, "");
+  usesCustomProxy = baseUrl !== DEFAULT_BASE_URL;
 }
 
 // TODO(deprecate-skills-phase-2): Remove the Skill Hub API helpers in this file
@@ -271,8 +294,11 @@ function getAuthHeaders(accessToken?: string): Record<string, string> {
     "X-Context7-Client-Version": VERSION,
     "X-Context7-Transport": "cli",
   };
+  const proxyToken = process.env.CONTEXT7_PROXY_TOKEN;
   const apiKey = process.env.CONTEXT7_API_KEY;
-  if (apiKey) {
+  if (usesCustomProxy && proxyToken) {
+    headers["Authorization"] = `Bearer ${proxyToken}`;
+  } else if (apiKey) {
     headers["Authorization"] = `Bearer ${apiKey}`;
   } else if (accessToken) {
     headers["Authorization"] = `Bearer ${accessToken}`;
