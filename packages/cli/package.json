@@ -4,7 +4,7 @@
   "description": "Context7 CLI fork with custom ctx7proxy support",
   "type": "module",
   "bin": {
-    "ctx7": "./dist/index.js"
+    "ctx7": "dist/index.js"
   },
   "files": [
     "dist"
